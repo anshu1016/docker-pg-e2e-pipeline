@@ -1,45 +1,147 @@
-Overview
-========
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+# 🚀 Docker PostgreSQL + Airflow ETL Pipeline - NASA APOD
 
-Project Contents
-================
+This repository demonstrates an end-to-end **ETL pipeline** using **Docker**, **PostgreSQL**, and **Apache Airflow** to extract data from **NASA's Astronomy Picture of the Day (APOD)** API, transform it, and load it into a PostgreSQL database.
 
-Your Astro project contains the following files and folders:
+---
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+## 📌 Project Structure
 
-Deploy Your Project Locally
-===========================
+```
+.
+├── docker-compose.yml     # Sets up PostgreSQL, Airflow, and supporting services
+├── dags/
+│   └── nasa_apod_postgres.py  # DAG definition for ETL process
+└── README.md
+```
 
-Start Airflow on your local machine by running 'astro dev start'.
+---
 
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
+## ⚙️ What This Project Does
 
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+- **Extract**: Fetches data from the NASA APOD API (`https://api.nasa.gov/planetary/apod`)
+- **Transform**: Formats and structures the API response
+- **Load**: Inserts the data into a PostgreSQL table inside a Docker container
+- **Schedule**: Runs daily using Apache Airflow
 
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+---
 
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+## 🐳 Docker Setup
 
-Deploy Your Project to Astronomer
-=================================
+Make sure you have Docker and Docker Compose installed.
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+### ✅ Run All Services
 
-Contact
-=======
+```bash
+docker-compose up -d
+```
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+This spins up:
+- PostgreSQL (`localhost:5432`)
+- Airflow Webserver (`localhost:8080`)
+- Airflow Scheduler, DAG Processor, Triggerer, and API
+
+---
+
+## 🧠 Airflow DAG
+
+The DAG (`nasa_apod_postgres.py`) does the following:
+
+1. Creates the `apod_data` table if it doesn't exist
+2. Sends a GET request to the NASA APOD API
+3. Parses the JSON response
+4. Inserts the data into PostgreSQL using Airflow’s `PostgresHook`
+
+---
+
+## 🧪 Access and Verify PostgreSQL Data
+
+### Via Terminal (WSL):
+```bash
+docker exec -it <postgres_container_name> psql -U postgres -d postgres
+```
+
+Example query:
+```sql
+SELECT * FROM apod_data;
+```
+
+### Via DBeaver:
+- **Host**: `127.0.0.1`
+- **Port**: `5432`
+- **User**: `postgres`
+- **Password**: `postgres`
+- **Database**: `postgres`
+
+---
+
+## 🖥️ Access Airflow UI
+
+Visit: [http://localhost:8080](http://localhost:8080)  
+Default credentials (if set):
+- **User**: `airflow`
+- **Password**: `airflow`
+
+Trigger the `nasa_apod_postgres` DAG manually or wait for the next scheduled run.
+
+---
+
+## 🔐 Configuration Tips
+
+- Make sure to set up a connection in Airflow named `postgres_default` with correct Postgres credentials.
+- Replace the `DEMO_KEY` in the API call with your actual NASA API key. You can store it in:
+  - Airflow Variables, or
+  - `.env` file if you configure environment loading
+
+---
+
+## 📈 Sample Output
+
+The `apod_data` table will look like this:
+
+| id | title | explanation | url | date | media_type |
+|----|-------|-------------|-----|------|------------|
+
+---
+
+## 📎 Useful Commands
+
+Check running containers:
+```bash
+docker ps
+```
+
+Shut down services:
+```bash
+docker-compose down
+```
+
+---
+
+## 💡 Troubleshooting
+
+- If DBeaver shows `Connection Refused`:
+  - Ensure Docker is running
+  - Confirm that Postgres container is active (`docker ps`)
+- If `psql` command not found in WSL:
+  ```bash
+  sudo apt install postgresql-client
+  ```
+
+---
+
+## 📚 Resources
+
+- [NASA APOD API](https://api.nasa.gov/)
+- [Airflow Docs](https://airflow.apache.org/docs/apache-airflow/stable/index.html)
+- [PostgreSQL Docs](https://www.postgresql.org/docs/)
+
+---
+
+## 👨‍💻 Author
+
+**Arun Shukla**  
+Passionate about automation, cloud, and data engineering 🚀  
+GitHub: [@anshu1016](https://github.com/anshu1016)
+
+---
