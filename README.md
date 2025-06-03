@@ -25,6 +25,13 @@ This repository demonstrates an end-to-end **ETL pipeline** using **Docker**, **
 - **Schedule**: Runs daily using Apache Airflow
 
 ---
+# Output
+> <img width="941" alt="image" src="https://github.com/user-attachments/assets/9c43fa61-3b5c-42ae-b56b-5b9ff5ea4bca" />
+
+> <img width="631" alt="image" src="https://github.com/user-attachments/assets/98adaa15-df29-4d51-b1b8-8516ee09b3ff" />
+
+> <img width="841" alt="image" src="https://github.com/user-attachments/assets/f8a9aeb2-5fd9-4a5a-b122-50cbc6a38d92" />
+
 
 ## 🐳 Docker Setup
 
